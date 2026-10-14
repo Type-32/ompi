@@ -4,8 +4,8 @@ export default defineNuxtConfig({
 
     modules: [
       "@nuxt/ui",
+      "@comark/nuxt",
       "@type32/nuxt-ui-extras",
-      "nuxt-auth-utils",
       "@vueuse/nuxt",
       "@nuxt/image",
       "@nuxt/icon",
@@ -15,6 +15,12 @@ export default defineNuxtConfig({
     ],
 
     css: ["~/assets/css/main.css"],
+
+    // One window, one shell: tabs replace routes.
+    pages: false,
+
+    // Component names come from the file name only (session/ToolCard.vue → <ToolCard>).
+    components: [{ path: "~/components", pathPrefix: false }],
 
     compatibilityDate: "2026-01-20",
 
@@ -36,7 +42,8 @@ export default defineNuxtConfig({
         optimizeDeps: {
             include: [
                 "@tauri-apps/plugin-store",
-                "@tauri-apps/plugin-fs",
+                "@comark/vue",
+                "shiki",
                 "@tauri-apps/plugin-dialog",
                 "@tauri-apps/plugin-clipboard-manager",
                 "@tauri-apps/api/path",
@@ -47,7 +54,6 @@ export default defineNuxtConfig({
                 "@tauri-apps/api/webviewWindow",
                 "@tauri-apps/api/webview",
                 "@tauri-apps/api/window",
-                "@tauri-apps/plugin-process",
                 "@tauri-apps/api/event",
                 "@tauri-apps/api/core",
                 "tailwindcss/colors",

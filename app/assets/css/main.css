@@ -28,3 +28,10 @@
   --ui-text-highlighted: var(--ui-color-neutral-50);
   --ui-primary: white;
 }
+
+div[data-tauri-decorum-tb] {
+  pointer-events: none;
+  div[data-tauri-drag-region] {
+    pointer-events: none;
+  }
+}

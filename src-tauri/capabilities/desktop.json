@@ -3,6 +3,6 @@
   "identifier": "desktop",
   "description": "desktop-only plugin permissions",
   "platforms": ["macOS", "windows", "linux"],
-  "windows": ["main", "*"],
+  "windows": ["main"],
   "permissions": ["decorum:allow-show-snap-overlay"]
 }

@@ -1,12 +1,12 @@
 [package]
-name = "app"
+name = "ompi"
 version = "0.1.0"
-description = "A Tauri App"
+description = "Desktop app for omp"
 authors = ["you"]
 license = ""
 repository = ""
 edition = "2021"
-rust-version = "1.77.2"
+rust-version = "1.82"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -18,7 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.6.3", features = [ "config-json5" ] }
 
 [dependencies]
-serde_json = "1.0"
+serde_json = { version = "1.0", features = ["raw_value"] }
 serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
 tauri = { version = "2.11.6", features = [ "devtools", "config-json5"] }
@@ -27,10 +27,11 @@ tauri-plugin-clipboard-manager = "2.3.3"
 tauri-plugin-os = "2.3.2"
 tauri-plugin-dialog = "2.7.3"
 tauri-plugin-opener = "2.5.5"
-tauri-plugin-fs = { version = "2.5.2", features = [ "watch" ] }
 tauri-plugin-notification = "2.4.0"
-tauri-plugin-process = "2.3.1"
 tauri-plugin-store = "2.4.5"
+tokio = { version = "1", features = ["process", "io-util", "sync", "time", "macros", "rt"] }
+base64 = "0.22"
+parking_lot = "0.12"
 
 # Desktop-only (not compiled for iOS/Android)
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]

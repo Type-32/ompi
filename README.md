@@ -1,38 +1,36 @@
-# Nuxt UI v4 + Nuxt v4 + Tauri v2 Starter
+# ompi
 
-Look at [Nuxt docs](https://nuxt.com/docs/getting-started/introduction) and [Nuxt UI docs](https://ui3.nuxt.dev) to learn more.
+A desktop app for [omp](https://omp.sh), built with Nuxt 4, Nuxt UI 4 and Tauri 2. It runs your installed `omp` (18.8.9 or later), so it uses your existing logins, config, MCP servers and sessions. Sessions you start here show up in the omp TUI and vice versa.
 
-## Setup
+See [PLAN.md](PLAN.md) for the design, the protocol findings behind it, and the phases still to come.
 
-Make sure to install the dependencies:
+## Requirements
+
+- omp 18.8.9 or later on your login shell's `PATH` (or set `OMPI_OMP_PATH`).
+- Bun, and Rust 1.82 or later via rustup.
+
+## Develop
 
 ```bash
 bun i
+bun run tauri:dev
 ```
 
-## Development Server
+If `tauri dev` fails with a Cargo `edition2024` error, an old `cargo` (for example `/usr/local/bin/cargo`) is ahead of rustup's on `PATH`. Run `PATH="$HOME/.cargo/bin:$PATH" bun run tauri:dev`.
 
-Start the development server on `http://localhost:3000`:
+## Test
 
 ```bash
-bun run dev
+bun test app/utils/omp          # transcript, frame parsing, branching
+(cd src-tauri && cargo test)    # chunk reassembly, session index, overlays, version gate
 ```
 
-## Production
+## How it works
 
-Build the application for production:
-
-```bash
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- **One omp process per open session tab**, run as `omp --mode rpc-ui` and owned by Rust (`src-tauri/src/host.rs`). Processes survive webview reloads; unanswered approvals are replayed when the tab reattaches. Idle background sessions are stopped after 10 minutes and resume on demand.
+- **Access scopes** (Always ask / Write / Full access) are omp `--config` overlay files ompi writes; omp picks up changes live. "Always allow `<tool>` here" writes a per-workspace overlay.
+- **The bridge** (`src-tauri/resources/ompi-bridge.ts`) is a small omp extension loaded into each process. It adds what omp's RPC protocol lacks: plan mode, branching inside a session file, assistant-message edits, labels and a context breakdown. It uses omp internals, so `hello` reports which features the installed omp supports and the UI hides the rest.
+- **Rendering**: model output is untrusted. Markdown is rendered without raw HTML, and the webview has a CSP and only the Tauri permissions the app uses (no filesystem access; Rust does all file I/O).
 
 ## Desktop Window Effects
 

@@ -333,12 +333,31 @@ Typed commands come first because they're the cheapest: the 45 RPC builtins, ski
   - `session.{getPlanModeState, setPlanModeState, setPlanProposalHandler, preparePlanForReview, setPlanReferencePath, setActiveToolsByName}`;
   - `sessionManager.{getEntry, appendMessageToBranch, appendModeChange}`;
   - `ctx.navigateTree`;
-  - `pi.setLabel`;
+  - `sessionManager.appendLabelChange` (`pi.setLabel` is a no-op in RPC mode on 18.8.9: it reported success but wrote nothing);
   - `computeSessionContextBreakdown`, imported with a literal module name.
 - **Missing functions:** if one is missing, its capability flag is false and ompi hides that feature.
 - **Upstream:** if omp adds RPC commands for plan mode, tree navigation and message edits, each bridge operation can be deleted. omp is MIT-licensed and accepts PRs.
 
 ## 6. Phases
+
+### Status (first implementation pass)
+
+Built: P0–P5 and P7–P9 end to end, plus most of P6 and P10 (details below). Verified in the real Tauri app on omp 18.8.9 with local `gemma4`, and in Chromium against real omp processes:
+
+- **Host (P1):** sessions start through the Rust host; a bash approval arrives and completes; after a webview reload the tab reattaches to the same process (no duplicate omp), and an approval that was pending during the reload is replayed and still completes. Stale run overlays from a crash are swept at startup.
+- **Shell (P2):** tabs, sidebar (all local sessions, titled from the first prompt when omp never titled them), ⌘K palette with tab, session, slash-command and app groups. App shortcuts work while typing in the composer.
+- **Session view (P3):** streaming, tool cards with diffs, `/context` output, TUI-only commands intercepted (`/tree` opens the graph, `/vibe` shows "TUI only" and never reaches the model).
+- **Plan mode (P7):** Plan toggle → model writes and proposes a plan → the turn stops at the proposal (like the TUI) → review panel renders the plan file → Approve implements it (`hello.txt` created). bash still asks first while planning.
+- **Editing (P8):** edit & resend creates a sibling branch in the same file; `‹ 1/2 ›` switches between answers. Assistant edits are verified at the bridge level (the next turn quotes the edited text).
+- **Graph (P9):** entry tree with the active path highlighted and abandoned branches indented.
+
+Not yet exercised in the UI: file drag-and-drop and paste (P6, wired but only the `@` mention path was verified against omp), provider login/logout in Settings (P10), and the "Approve in new session" / "Approve & compact" plan options.
+
+Corrections found while building, now in the code:
+
+- `navigateTree` on a **user** message rewinds to just *before* it, so edit & resend targets the message itself, and "Continue from here" on a user message walks to the end of its reply.
+- omp inserts a hidden `custom_message` before each prompt, so branch siblings are found through hidden entries, not by direct parent.
+- The `xd://propose` result nests the plan under `details.xdev.inner`.
 
 Each phase ends with a smoke test on local `ollama/gemma4:latest --thinking off`, which is free. Tests that need tool calls use directive prompts ("Call the write tool with …"), because gemma4 sometimes answers in prose. P0–P5 give a usable daily driver. P6–P10 add the remaining requested features. Everything through P10 is in scope.
 
